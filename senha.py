@@ -51,3 +51,7 @@ while True:
     else:
         print('Senha cadastrada')
         break
+
+    n=input('Digite seu voto: ')
+    n=22
+    print(f'voto confirmado :{n}')
