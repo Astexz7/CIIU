@@ -1,0 +1,82 @@
+print("Bem-vindo ao CIIU, Centro da informação da Infraestrutura e Universitária!")
+import os
+import secrets
+import smtplib
+from email.message import EmailMessage
+from getpass import getpass
+def enviar_codigo(destinatario, codigo):
+    remetente = os.environ["EMAIL_REMETENTE"]
+    senha_app = os.environ["EMAIL_SENHA_APP"]
+    msg = EmailMessage()
+    msg['From'] = remetente
+    msg['To'] = destinatario
+    msg['Subject'] = "Código de verificação"
+    msg.set_content(f"Seu código de verificação é: {codigo}")
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as servidor:
+        servidor.login(remetente, senha_app)
+        servidor.send_message(msg)
+def senha_valida(senha):
+    qnt_caracteres = len(senha)
+
+
+    tem_maiuscula = False 
+    tem_minuscula = False 
+    tem_numero = False
+    
+    for caractere in senha:
+        if caractere.isupper():
+            tem_maiuscula = True
+        if caractere.isdigit():
+            tem_numero = True
+        if caractere.islower():
+            tem_minuscula = True
+    if tem_maiuscula and tem_minuscula and tem_numero:
+        if 8 <= qnt_caracteres <= 20:
+            return True
+        return False
+
+usuarios = {}
+while True:
+    print("1 - Login")
+    print("2 - Cadastro")
+    print("3 - Sair")
+    opcao = input("Escolha uma opção:")
+    if opcao == "1":
+        print("faça o login")
+        usuario = input("digite seu email institucional para login: ")
+        senha = getpass("digite sua senha:", echo_char="*")
+        if usuario in usuarios and usuarios[usuario] == senha:
+            print("Login realizado com sucesso!")
+        else:
+            print("senha ou usuário inválidos.") 
+    elif opcao == "2":
+        print ("faça o cadastro")
+        email = input("digite seu email institucional: ")
+        if email in usuarios:
+            print("Este email já cadastrado. Faça o login.")
+        elif email.endswith("@ufrpe.br"):
+            codigo = f"{secrets.randbelow(10000):04d}"
+            enviar_codigo(email, codigo)
+            print("código enviado com sucesso!")
+            digitado = input("Digite o código: ")
+            if digitado == codigo:
+                while True:
+                    senha = getpass("Crie uma senha forte: ", echo_char="*")
+                    senha_verificacao = getpass("Confirme sua senha: ", echo_char="*")
+                    if senha != senha_verificacao:
+                        print("As senhas estão diferentes. Tente novamente.")
+                        continue
+                    if senha_valida(senha):
+                        print("Senha Valida!")
+                        usuarios[email] = senha
+                        print("cadastro realizado com sucesso!")
+                        break
+                    else : 
+                        print("Senha inválida. A senha deve conter entre 8 e 20 caracteres, pelo menos uma letra maiúscula, uma letra minúscula e um número.")
+            else:
+                print("Código inválido.")
+        else:
+            print("Email inválido. Por favor, utilize um email institucional válido.")   
+    elif opcao == "3":
+        print("Até logo!")
+        break
