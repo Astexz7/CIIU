@@ -1,0 +1,92 @@
+print("Bem-vindo ao CIIU, Centro da informação da Infraestrutura e Universitária!")
+import os # o import vai nesse caso o os vai importar funções do sistema operacional
+import secrets # importa funções de outros programas, nesse caso o secrets vai importar funções para gerar números aleatórios seguros, que são úteis para criar senhas e códigos de verificação.
+import smtplib 
+import sqlite3 # esse import vai importar funções do sqlite3, que é um banco de dados relacional, ou seja, ele vai permitir que o programa se conecte a um banco de dados e faça consultas e alterações nele.
+import hashlib # Ainda não usado 
+from email.message import EmailMessage 
+from getpass import getpass
+def enviar_codigo(destinatario, codigo): # def vai definir uma função chamada enviar_codigo que recebe dois parâmetros: destinatario e codigo. Essa função vai enviar um email com o código de verificação para o destinatário especificado.
+    remetente = os.environ["EMAIL_REMETENTE"] # o remetente é o email que vai enviar o código de verificação. Ele é obtido a partir de uma variável de ambiente chamada EMAIL_REMETENTE, que deve ser definida no sistema operacional antes de executar o programa.
+    senha_app = os.environ["EMAIL_SENHA_APP"] # o os.environ vai acessar a variável de ambiente EMAIL_SENHA_APP, que deve conter a senha do aplicativo de email do remetente. Essa senha é necessária para autenticar o remetente no servidor de email e enviar o código de verificação.
+    msg = EmailMessage() # EmailMessage vai criar um objeto de mensagem de email que vai ser usado para enviar o código de verificação. O objeto msg vai armazenar as informações do email, como remetente, destinatário, assunto e conteúdo.
+    msg['From'] = remetente
+    msg['To'] = destinatario
+    msg['Subject'] = "Código de verificação"
+    msg.set_content(f"Seu código de verificação é: {codigo}")
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as servidor:
+        servidor.login(remetente, senha_app)
+        servidor.send_message(msg) 
+def senha_valida(senha): # def vai definir uma função chamada senha_valida que recebe um parâmetro chamado senha. Essa função vai verificar se a senha atende aos critérios de segurança estabelecidos.
+    qnt_caracteres = len(senha)  #len vai contar a quantidade de caracteres da senha e armazenar na variável qnt_caracteres.
+
+
+    tem_maiuscula = False # se a senha tiver pelo menos uma letra maiúscula, essa variável vai ser True, caso contrário, vai ser False.
+    tem_minuscula = False # se a senha tiver pelo menos uma letra minúscula, essa variável vai ser True, caso contrário, vai ser False.
+    tem_numero = False # se a senha tiver pelo menos um número, essa variável vai ser True, caso contrário, vai ser False.
+
+    for caractere in senha: # vai percorrer cada caractere da senha e verificar se ele é uma letra maiúscula, uma letra minúscula ou um número. Se for, a variável correspondente vai ser atualizada para True.
+        if caractere.isupper(): #if vai verificar se o caractere é uma letra maiúscula. Se for, a variável tem_maiuscula vai ser atualizada para True.
+            tem_maiuscula = True
+        if caractere.isdigit(): #if vai verificar se o caractere é um número. Se for, a variável tem_numero vai ser atualizada para True.
+            tem_numero = True
+        if caractere.islower(): #if vai verificar se o caractere é uma letra minúscula. Se for, a variável tem_minuscula vai ser atualizada para True.
+            tem_minuscula = True
+    if tem_maiuscula and tem_minuscula and tem_numero:
+        if 8 <= qnt_caracteres <= 20: # se a senha tiver pelo menos uma letra maiúscula, uma letra minúscula e um número, e se a quantidade de caracteres estiver entre 8 e 20, a função vai retornar True, indicando que a senha é válida. Caso contrário, vai retornar False.
+            return True # return True vai indicar que a senha é válida.
+        return False # return False vai indicar que a senha não é válida.
+def hash_senha(senha):
+    salt = os.urandom(16)
+    return hashlib.pbkdf2_hmac('sha256', senha.encode(), salt, 100000), salt
+conexao = sqlite3.connect(r"C:\Users\marce\Downloads\sqlite-tools-win-x64-3530400\usuarios.db")
+cursor = conexao.cursor()
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+print(cursor.fetchall())
+usuarios = {}
+while True: # while vai criar um loop infinito que vai exibir o menu de opções e aguardar a escolha do usuário. O loop só vai ser interrompido quando o usuário escolher a opção de sair.
+    print("1 - Login") 
+    print("2 - Cadastro")
+    print("3 - Sair")
+    opcao = input("Escolha uma opção:")
+    if opcao == "1":
+        print("faça o login")
+        usuario = input("digite seu email institucional para login: ").strip().lower() # input vai solicitar que o usuário digite seu email institucional para login. O método strip() remove espaços em branco no início e no final da string, e o método lower() converte a string para letras minúsculas.
+        senha = getpass("digite sua senha:", echo_char="*") # getpass vai solicitar que o usuário digite sua senha sem exibir os caracteres digitados na tela. O parâmetro echo_char="*" faz com que os caracteres digitados sejam substituídos por asteriscos.
+        if usuario in usuarios and usuarios[usuario] == senha: # if vai verificar se o email do usuário está cadastrado no dicionário usuarios e se a senha digitada corresponde à senha cadastrada. Se for verdadeiro, a mensagem de login realizado com sucesso será exibida. Caso contrário, a mensagem de senha ou usuário inválidos será exibida.
+            print("Login realizado com sucesso!")
+        else:
+            print("senha ou usuário inválidos.") #se o if for falso, executa o else, que exibe a mensagem de senha ou usuário inválidos.
+    elif opcao == "2":
+        print ("faça o cadastro")
+        email = input("digite seu email institucional: ").strip().lower() # input vai solicitar que o usuário digite seu email institucional para cadastro. O método strip() remove espaços em branco no início e no final da string, e o método lower() converte a string para letras minúsculas.
+        if email in usuarios: # se o email digitado pelo usuário já estiver cadastrado no dicionário usuarios, a mensagem de email já cadastrado será exibida e o usuário será solicitado a fazer o login.
+            print("Este email já cadastrado. Faça o login.")
+        elif email.endswith("@ufrpe.br"): # elif vai verificar se o email digitado pelo usuário termina com "@ufrpe.br". Se for verdadeiro, o código de verificação será gerado e enviado para o email do usuário. Caso contrário, a mensagem de email inválido será exibida.
+            codigo = f"{secrets.randbelow(10000):04d}" # secrets.randbelow(10000) vai gerar um número aleatório entre 0 e 9999, e o f-string vai formatar o número para ter 4 dígitos, adicionando zeros à esquerda se necessário. O código de verificação será enviado para o email do usuário.
+            enviar_codigo(email, codigo) # enviar_codigo vai chamar a função enviar_codigo, passando o email do usuário e o código de verificação como parâmetros. A função vai enviar um email com o código de verificação para o usuário.
+            print("código enviado com sucesso!")
+            digitado = input("Digite o código: ")
+            if digitado == codigo: # if vai verificar se o código digitado pelo usuário é igual ao código gerado e enviado para o email do usuário. Se for verdadeiro, o usuário será solicitado a criar uma senha forte. Caso contrário, a mensagem de código inválido será exibida.
+                while True:
+                    senha = getpass("Crie uma senha forte: ", echo_char="*") #getpass vai solicitar que o usuário crie uma senha forte sem exibir os caracteres digitados na tela. O parâmetro echo_char="*" faz com que os caracteres digitados sejam substituídos por asteriscos.
+                    senha_verificacao = getpass("Confirme sua senha: ", echo_char="*") #senha_verificacao vai solicitar que o usuário confirme a senha criada sem exibir os caracteres digitados na tela. O parâmetro echo_char="*" faz com que os caracteres digitados sejam substituídos por asteriscos.
+                    if senha != senha_verificacao:
+                        print("As senhas estão diferentes. Tente novamente.")
+                        continue # continue vai fazer com que o loop while seja reiniciado, solicitando que o usuário crie uma nova senha e confirme novamente.
+                    elif senha_valida(senha):
+                        print("Senha Valida!")
+                        usuarios[email] = senha # o dicionário usuarios vai armazenar o email do usuário como chave e a senha criada como valor. Isso permite que o programa verifique se o email e a senha correspondem durante o login.
+                        print("cadastro realizado com sucesso!")
+                        break
+                    else : 
+                        print("Senha inválida. A senha deve conter entre 8 e 20 caracteres, pelo menos uma letra maiúscula, uma letra minúscula e um número.")
+            else:
+                print("Código inválido.")
+        else:
+            print("Email inválido. Por favor, utilize um email institucional válido.")   
+    elif opcao == "3":
+        print("Até logo!")
+        break # break vai interromper o loop while e encerrar o programa.
+    else:
+        print("Opção inválida. Tente novamente.")   
