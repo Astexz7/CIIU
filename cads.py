@@ -1,11 +1,14 @@
-
 import random
+from email.message import EmailMessage
+import smtplib
+
 
 print('Bem-Vindo ao CIIU.')
+SENHA_AAAPP = 'jnzs ooga iiof wmbu'
 
-def email_inst(email): #função criada para verificar final do email institucional
+def email_inst(email):
 
-    if email.endswith("@ufrpe.br"): #verificação do final do email
+    if email.endswith("@ufrpe.br"): #verificação se o email termina com @ufrpe.br
         return True
     else:
         return False
@@ -14,26 +17,36 @@ while True: #aqui faz o loop em caso de erro
 
     email = input('Digite seu email institucional (@ufrpe.br): ').lower() #aqui digita-se o email do usuário
 
-    #verificação de verdadeiro ou falso
-    if  email_inst(email):
+
+    if  email_inst(email): #VERIFICAÇÃO DE EMAIL
+
+        cod = str(random.randint(1000,9999)) #geração de código aleatório
+
+        #dados dos email´s
+        msg = EmailMessage()
+        msg["From"] = "projetociiu@gmail.com"
+        msg["To"] = email
+        msg["Subject"] = 'Centro de Informação Infraestrutural Universitário (CIIU)'
+        msg.set_content(f"Seu código de verificação é {cod}")
+
+        #porta do servido e senha do email
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
+            servidor.login("projetociiu@gmail.com", SENHA_AAAPP)
+            servidor.send_message(msg)
+
         print(f"Enviamos um código para o seu email: {email}")
-        
-        #VERIFICAÇÃO DE EMAIL
 
-        cod = str(random.randint(1000,9999))
-        print(cod)
-
-        erros = 0
-        lim_erros = 3
-        verif_email = False
+        erros = 0 #variável de quantidade inicial de erros
+        lim_erros = 3 #limite de erros
+        verif_email = False #variável para constar se o email foi verificado
 
         while True:
-            cod_verif = (input('Digite o código enviado para seu email verifica-lo: '))
+            cod_verif = (input('Digite o código enviado para seu email verifica-lo: ')) #usuário digita o código aqui
 
-            if cod != cod_verif:
+            if cod != cod_verif: #aqui soma mais 1 erro a cada tentativa falha
                 erros += 1
 
-                if lim_erros > erros:
+                if lim_erros > erros: #aqui verifica se a quantidade de erro ultrapassou o limite permitido
                     print(f'Código incorreto. Tentativa {erros} de {lim_erros}')
                 
                 else:
@@ -64,11 +77,11 @@ def senha_valida(senha):
     #verificação de caracteres na senha p1.
     for caracteres in senha:
 
-        if caracteres.isupper():
+        if caracteres.isupper(): #verifica se a senha possui letra maiúscula
             tem_maiscula = True
-        if caracteres.islower():
+        if caracteres.islower(): #verifica se a senha possui letra minúscula
             tem_minuscula= True
-        if caracteres.isdigit():
+        if caracteres.isdigit(): #verifica se a senha possui número
             tem_numero = True
 
     #verificação de caracteres na senha p2.
@@ -105,17 +118,4 @@ while True:
         print('Senha criada')
         break
 
-#ESCOLHA DE CURSO
-
-#lista de cursos
-list_courses = ['BSI', 'BMV', 'BCC', 'LCC' ]
-print(list_courses)
-
-while True:
-    escolha = input('Digite seu curso: ').strip().upper()
-
-    if escolha in list_courses:
-        print(f'Curso {escolha} escolhido com sucesso')
-        break
-    else:
-        print('Curso inválido')
+usuario[email] = {'senha' : senha}
