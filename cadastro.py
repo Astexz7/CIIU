@@ -15,8 +15,7 @@ def cadastrar(usuarios):
 
     while True: #aqui faz o loop em caso de erro
 
-        email = input('Digite seu email institucional (@ufrpe.br): ').lower() #aqui digita-se o email do usuário
-
+        email = input('Digite seu email institucional (@ufrpe.br): ').lower().strip() #aqui digita-se o email do usuário
 
         if  email_inst(email): #VERIFICAÇÃO DE EMAIL
 
