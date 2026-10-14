@@ -1,5 +1,6 @@
 #armazém de tags
 #CONSERTE OS DEPARTAMENTOS
+#Lembrar de importar isso na parte de cadastro de Nicolas
 CURSOS_UFRPE = {
     1: {"curso": "BACHARELADO EM ADMINISTRAÇÃO", "tag": "#DEPAD"},
     2: {"curso": "BACHARELADO EM AGRONOMIA", "tag": "#DEPAGRO"},
@@ -48,12 +49,11 @@ def selecionar_curso_usuario():
             num_escolhido = int(resposta)
             curso_selecionado = CURSOS_UFRPE[num_escolhido]
             
-            # Retorna um dicionário contendo o curso e a tag pronta
             return {
                 "curso": curso_selecionado["curso"],
                 "tag": curso_selecionado["tag"]
             }
         else:
-            print("Opção inválida! Digite um número entre 1 e 30.")
+            print("Número inválido! Você deve digitar um número entre os disponíveis que seja do seu curso.")
 if __name__ == "__main__":
     selecionar_curso_usuario()
