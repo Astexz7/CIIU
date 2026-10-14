@@ -1,0 +1,59 @@
+#armazém de tags
+#CONSERTE OS DEPARTAMENTOS
+CURSOS_UFRPE = {
+    1: {"curso": "BACHARELADO EM ADMINISTRAÇÃO", "tag": "#DEPAD"},
+    2: {"curso": "BACHARELADO EM AGRONOMIA", "tag": "#DEPAGRO"},
+    3: {"curso": "BACHARELADO EM CIÊNCIA DA COMPUTAÇÃO", "tag": "#CEAGRI_2"},
+    4: {"curso": "BACHARELADO EM CIÊNCIAS BIOLÓGICAS", "tag": "#DEPBIO"},
+    5: {"curso": "BACHARELADO EM CIÊNCIAS CONTÁBEIS", "tag": "#DECON"},
+    6: {"curso": "BACHARELADO EM CIÊNCIAS ECONÔMICAS", "tag": "#DECON"},
+    7: {"curso": "BACHARELADO EM CIÊNCIAS SOCIAIS", "tag": "#DECISO"},
+    8: {"curso": "BACHARELADO EM ENGENHARIA AGRÍCOLA E AMBIENTAL", "tag": "#DEAGRI"},
+    9: {"curso": "BACHARELADO EM ENGENHARIA AMBIENTAL", "tag": "#DTR"},
+    10: {"curso": "BACHARELADO EM ENGENHARIA DE PESCA", "tag": "#DEPAQ"},
+    11: {"curso": "BACHARELADO EM ENGENHARIA FLORESTAL", "tag": "#DCFL"},
+    12: {"curso": "BACHARELADO EM GASTRONOMIA", "tag": "#DTR"},
+    13: {"curso": "BACHARELADO EM MEDICINA VETERINÁRIA", "tag": "#DMV"},
+    14: {"curso": "BACHARELADO EM SISTEMAS DE INFORMAÇÃO", "tag": "#DEINFO"},
+    15: {"curso": "BACHARELADO EM ZOOTECNIA", "tag": "#DZ"},
+    16: {"curso": "BACHARELADO EM ECOLOGIA", "tag": "#DEPBIO"},
+    17: {"curso": "BACHARELADO EM EDUCAÇÃO FÍSICA", "tag": "#DEPED"},
+    18: {"curso": "LICENCIATURA EM CIÊNCIAS AGRÍCOLAS", "tag": "#DEAGRI"},
+    19: {"curso": "LICENCIATURA EM CIÊNCIAS BIOLÓGICAS", "tag": "#DEPBIO"},
+    20: {"curso": "LICENCIATURA EM COMPUTAÇÃO", "tag": "#CEAGRI_2"},
+    21: {"curso": "LICENCIATURA EM ECONOMIA DOMÉSTICA", "tag": "#DECON"},
+    22: {"curso": "LICENCIATURA EM EDUCAÇÃO FÍSICA", "tag": "#DEPFIS"},
+    23: {"curso": "LICENCIATURA EM FÍSICA", "tag": "#DEPFIS"},
+    24: {"curso": "LICENCIATURA EM HISTÓRIA", "tag": "#DECISO"},
+    25: {"curso": "LICENCIATURA EM LETRAS", "tag": "#DECISO"},
+    26: {"curso": "LICENCIATURA EM MATEMÁTICA", "tag": "#CEAGRI_2"},
+    27: {"curso": "LICENCIATURA EM PEDAGOGIA", "tag": "#DECISO"},
+    28: {"curso": "LICENCIATURA EM CIÊNCIAS SOCIAIS", "tag": "#DECISO"},
+    29: {"curso": "LICENCIATURA EM ARTES VISUAIS", "tag": "#DECISO"},
+    30: {"curso": "LICENCIATURA EM GEOGRAFIA", "tag": "#DECISO"},
+}
+
+def selecionar_curso_usuario():
+    print("Qual o seu curso? (Digite o número correspondente)\n")
+    
+    for numero, info in CURSOS_UFRPE.items():
+        print(f"{numero}: {info['curso']}")
+
+    print("-" * 50)
+
+    while True:
+        resposta = input("Digite o número do seu curso: ").strip()
+        
+        if resposta.isdigit() and int(resposta) in CURSOS_UFRPE:
+            num_escolhido = int(resposta)
+            curso_selecionado = CURSOS_UFRPE[num_escolhido]
+            
+            # Retorna um dicionário contendo o curso e a tag pronta
+            return {
+                "curso": curso_selecionado["curso"],
+                "tag": curso_selecionado["tag"]
+            }
+        else:
+            print("Opção inválida! Digite um número entre 1 e 30.")
+if __name__ == "__main__":
+    selecionar_curso_usuario()
