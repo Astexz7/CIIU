@@ -1,58 +1,53 @@
-#CADASTRO DE EMAIL
 
 import random
 
 print('Bem-Vindo ao CIIU.')
-print('Vamos fazer seu cadastro')
 
-#função criada para verificar final do email institucional
-def email_inst(email):
+def email_inst(email): #função criada para verificar final do email institucional
 
-    #aqui verifica o final do email
-    if email.endswith("@ufrpe.br"):
+    if email.endswith("@ufrpe.br"): #verificação do final do email
         return True
     else:
         return False
 
-#aqui faz o loop em caso de erro
-while True:
+while True: #aqui faz o loop em caso de erro
 
-    #aqui digita-se o email do usuário
-    email = input('Digite seu email institucional (@ufrpe.br): ').lower()
+    email = input('Digite seu email institucional (@ufrpe.br): ').lower() #aqui digita-se o email do usuário
 
     #verificação de verdadeiro ou falso
     if  email_inst(email):
         print(f"Enviamos um código para o seu email: {email}")
-        break
+        
+        #VERIFICAÇÃO DE EMAIL
 
+        cod = str(random.randint(1000,9999))
+        print(cod)
+
+        erros = 0
+        lim_erros = 3
+        verif_email = False
+
+        while True:
+            cod_verif = (input('Digite o código enviado para seu email verifica-lo: '))
+
+            if cod != cod_verif:
+                erros += 1
+
+                if lim_erros > erros:
+                    print(f'Código incorreto. Tentativa {erros} de {lim_erros}')
+                
+                else:
+                    print('Limite de tentativas atingido.')
+                    break
+            else:
+                print('EMAIL VERIFICADO!')
+                verif_email = True
+                break
+
+        if verif_email:
+            break
     else:
         print("Aceitamos apenas email's institucionais")
-
-#VERIFICAÇÃO DE EMAIL
-
-cod = random.randint(1000,9999)
-print(cod)
-
-erros = 0
-lim_erros = 3
-
-while True:
-
-    cod_verif = int(input('Digite o código enviado para seu email verifica-lo: '))
-
-    if cod == cod_verif:
-        print('Email verificado')
-        break
-
-    else:
-        erros += 1
-
-        if lim_erros > erros:
-            print(f'Código incorreto. Tentativa {erros} de {lim_erros}')
-        
-        else:
-            print('Limite de tentativas atingido.')
-            break
 
 #CRIAÇÃO DE SENHA
 
@@ -114,7 +109,7 @@ while True:
 
 #lista de cursos
 list_courses = ['BSI', 'BMV', 'BCC', 'LCC' ]
-print({list_courses})
+print(list_courses)
 
 while True:
     escolha = input('Digite seu curso: ').strip().upper()
