@@ -1,6 +1,7 @@
 import random
 from email.message import EmailMessage
 import smtplib
+from cursos import selecionar_curso_usuario
 
 SENHA_AAAPP = 'jnzs ooga iiof wmbu'
 
@@ -116,4 +117,6 @@ def cadastrar(usuarios):
         else:
             print('Senha criada')
             break
-    usuarios[email] = {'senha' : senha}
+
+    curso = selecionar_curso_usuario()
+    usuarios[email] = {'senha' : senha, 'curso' : curso}
