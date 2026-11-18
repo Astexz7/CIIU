@@ -49,8 +49,6 @@ O CIIU reúne essas reclamações e sugestões em um só lugar, com **participa�
 | Release | Foco | Entregas |
 |:---:|---|---|
 | **1.0** | Base do sistema | Cadastro de usuários, cursos, login e solicitações |
-| **1.1** | Privacidade e acompanhamento | Registro anônimo e status da solicitação |
-| **1.2** | Comunidade | Comentários e enquete de importância |
 
 <details>
 <summary><b>📋 Ver checklist detalhado</b></summary>
