@@ -61,14 +61,6 @@ O CIIU reúne essas reclamações e sugestões em um só lugar, com **participa�
 - [ ] Login
 - [ ] Solicitações (título, descrição, local e foto)
 
-**Release 1.1**
-- [ ] Opção de registro anônimo
-- [ ] Status da solicitação (pendente / em andamento / concluída)
-
-**Release 1.2**
-- [ ] Comentários nas solicitações
-- [ ] Enquete de importância
-
 </details>
 
 ---
