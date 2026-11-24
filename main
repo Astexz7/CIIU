@@ -1,6 +1,5 @@
+from dados import carregar
 from menu import iniciar_menu
 
-usuarios = {}
-solicitacoes = []
-
+usuarios, solicitacoes = carregar()
 iniciar_menu(usuarios, solicitacoes)
