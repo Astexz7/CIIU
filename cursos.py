@@ -1,5 +1,4 @@
-
-CURSOS_UFRPE = {
+CURSOS_UFRPE = {  # dicionário: a chave é o número do curso; o valor é outro dicionário com o nome e a tag do departamento
     1: {"curso": "BACHARELADO EM ADMINISTRAÇÃO", "tag": "#DEPAD"},
     2: {"curso": "BACHARELADO EM AGRONOMIA", "tag": "#DEPAGRO"},
     3: {"curso": "BACHARELADO EM CIÊNCIA DA COMPUTAÇÃO", "tag": "#CEAGRI_2"},
@@ -30,28 +29,30 @@ CURSOS_UFRPE = {
     28: {"curso": "LICENCIATURA EM CIÊNCIAS SOCIAIS", "tag": "#DECISO"},
     29: {"curso": "LICENCIATURA EM ARTES VISUAIS", "tag": "#DECISO"},
     30: {"curso": "LICENCIATURA EM GEOGRAFIA", "tag": "#DECISO"},
-}
+}  # fim do dicionário de cursos
 
-def selecionar_curso_usuario():
-    print("Qual o seu curso? (Digite o número correspondente)\n")
-    
-    for numero, info in CURSOS_UFRPE.items():
-        print(f"{numero}: {info['curso']}")
+def selecionar_curso_usuario():  # mostra os cursos e devolve o que o usuário escolheu
+    print("Qual o seu curso? (Digite o número correspondente)\n")  # título da lista
 
-    print("-" * 50)
+    for numero, info in CURSOS_UFRPE.items():  # percorre o dicionário: numero = chave, info = {curso, tag}
+        print(f"{numero}: {info['curso']}")  # mostra cada curso, ex: 3: BACHARELADO EM CIÊNCIA DA COMPUTAÇÃO
 
-    while True:
-        resposta = input("Digite o número do seu curso: ").strip()
-        
-        if resposta.isdigit() and int(resposta) in CURSOS_UFRPE:
-            num_escolhido = int(resposta)
-            curso_selecionado = CURSOS_UFRPE[num_escolhido]
-            
-            return {
+    print("-" * 50)  # linha separadora
+
+    while True:  # repete até o usuário digitar um número válido
+        resposta = input("Digite o número do seu curso: ").strip()  # lê a resposta como texto
+
+        if resposta.isdigit() and int(resposta) in CURSOS_UFRPE:  # é só número E existe na lista?
+            num_escolhido = int(resposta)  # converte o texto para número inteiro
+            curso_selecionado = CURSOS_UFRPE[num_escolhido]  # pega os dados do curso escolhido
+
+            return {  # devolve um dicionário com o nome do curso e a tag
                 "curso": curso_selecionado["curso"],
                 "tag": curso_selecionado["tag"]
             }
-        else:
+        else:  # número inválido ou texto
             print("Número inválido! Você deve digitar um número entre os disponíveis que seja do seu curso.")
-if __name__ == "__main__":
+
+
+if __name__ == "__main__":  # só roda quando você executa "python cursos.py" diretamente (útil para testar)
     selecionar_curso_usuario()
