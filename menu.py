@@ -1,16 +1,25 @@
+import subprocess
 import os
 from cadastro import cadastrar
 from login import login_usuario
+from dados import salvar
+from admin import eh_admin, alterar_status
 from solicitacoes import (
+    Solicitacao,
     fazer_solicitacao,
-    ver_solicitacoes, 
-    alterar_status,
+    ver_solicitacoes,
     votar_prioridade,
 )
 
 
 def limpar_tela():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    subprocess.run('cls' if os.name == 'nt' else 'clear', shell=True)
+
+
+def salvar_dados(usuarios, solicitacoes_obj, solicitacoes_originais):
+    dicts = [s.para_dict() for s in solicitacoes_obj]
+    solicitacoes_originais[:] = dicts
+    salvar(usuarios, dicts)
 
 
 def exibir_mural(solicitacoes, usuario_logado, usuarios):
@@ -18,32 +27,34 @@ def exibir_mural(solicitacoes, usuario_logado, usuarios):
     print("  [BRASÃO UFRPE] CIIU - Centro de Info. da Infraestrutura Univ.")
     if usuario_logado:
         curso_tag = usuarios[usuario_logado]['curso']['tag']
-        print(f"  Perfil: {usuario_logado} ({curso_tag})")
+        cargo = " [ADMIN]" if eh_admin(usuario_logado) else ""
+        print(f"  Perfil: {usuario_logado} ({curso_tag}){cargo}")
     else:
         print("  Perfil: [Visitante]")
     print("=" * 65)
 
-    andamento = [s for s in solicitacoes if s.status == 'Andamento']
-    concluidas = [s for s in solicitacoes if s.status == 'Concluida']
+    ativas = [s for s in solicitacoes if s.status != 'Concluída']
+    concluidas = [s for s in solicitacoes if s.status == 'Concluída']
 
-    print("\n--- FEED DE SOLICITAÇÕES (EM ANDAMENTO) ---")
-    if not andamento:
-        print("  Nenhuma solicitação em andamento no momento.")
+    print("\n--- FEED DE SOLICITAÇÕES (ATIVAS) ---")
+    if not ativas:
+        print("  Nenhuma solicitação em pendência no momento.")
     else:
-        for i, s in enumerate(andamento, start=1):
-            print(f"  [{i}] [{s.natureza}] {s.titulo} - {s.descricao} | Local: {s.local} | Prioridade: {s.calcular_prioridade()}")
+        for i, s in enumerate(ativas, start=1):
+            print(f"  [{i}] #{s.id} [{s.natureza}] {s.titulo} - {s.descricao} | Local: {s.local} | Status: {s.status} | Prioridade: {s.calcular_prioridade()}")
 
     print("\n--- SOLICITAÇÕES CONCLUÍDAS ---")
     if not concluidas:
         print("  Nenhuma solicitação concluída ainda.")
     else:
         for s in concluidas:
-            print(f"  [Concluída] [{s.natureza}] {s.titulo} - {s.descricao} ({s.local})")
+            print(f"  [Concluída] #{s.id} [{s.natureza}] {s.titulo} - {s.descricao} ({s.local})")
     print("-" * 65)
 
 
-def iniciar_menu(usuarios, solicitacoes):
-    usuario_logado = None  # Começa como visitante (deslogado)
+def iniciar_menu(usuarios, solicitacoes_dicts):
+    usuario_logado = None
+    solicitacoes = [Solicitacao.de_dict(d) for d in solicitacoes_dicts]
 
     while True:
         limpar_tela()
@@ -58,6 +69,8 @@ def iniciar_menu(usuarios, solicitacoes):
             print("[5] Fazer Login / Cadastro")
         else:
             print("[5] Sair da conta (Deslogar)")
+            if eh_admin(usuario_logado):
+                print("[6] Alterar status de solicitação (Admin)")
         print("[0] Fechar sistema")
         print("-" * 65)
 
@@ -90,41 +103,53 @@ def iniciar_menu(usuarios, solicitacoes):
         # 3. NOVA SOLICITAÇÃO (Exige login)
         elif opcao == "3":
             if not usuario_logado:
-                usuario_logado = exigir_autenticacao(usuarios)
-            
+                usuario_logado = exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts)
+
             if usuario_logado:
                 limpar_tela()
-                fazer_solicitacao(solicitacoes, usuarios, usuario_logado)
+                if fazer_solicitacao(solicitacoes, usuarios, usuario_logado):
+                    salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
                 input("\nPressione ENTER para voltar ao mural...")
 
         # 4. VOTAR NA PRIORIDADE (Exige login)
         elif opcao == "4":
             if not usuario_logado:
-                usuario_logado = exigir_autenticacao(usuarios)
-            
+                usuario_logado = exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts)
+
             if usuario_logado:
                 limpar_tela()
-                votar_prioridade(solicitacoes, usuario_logado)
+                if votar_prioridade(solicitacoes, usuario_logado):
+                    salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
                 input("\nPressione ENTER para voltar ao mural...")
 
         # 5. LOGIN / CADASTRO OU LOGOUT
         elif opcao == "5":
             if not usuario_logado:
-                usuario_logado = exigir_autenticacao(usuarios)
+                usuario_logado = exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts)
             else:
                 print(f"Até logo, {usuario_logado}!")
                 usuario_logado = None
                 input("Pressione ENTER para continuar como visitante...")
 
+        # 6. ALTERAR STATUS (ADMIN)
+        elif opcao == "6" and usuario_logado and eh_admin(usuario_logado):
+            limpar_tela()
+            dicts_temp = [s.para_dict() for s in solicitacoes]
+            if alterar_status(dicts_temp, usuario_logado):
+                solicitacoes = [Solicitacao.de_dict(d) for d in dicts_temp]
+                salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
+            input("\nPressione ENTER para voltar ao mural...")
+
         # 0. SAIR
         elif opcao == "0":
+            salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
             print("Encerrando o CIIU...")
             break
         else:
             input("Opção inválida! Pressione ENTER...")
 
 
-def exigir_autenticacao(usuarios):
+def exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts):
     print("\n[!] Você precisa estar logado para realizar esta ação.")
     print("[1] Fazer Login")
     print("[2] Criar Conta (Cadastro)")
@@ -136,10 +161,11 @@ def exigir_autenticacao(usuarios):
             input("\nNenhum usuário cadastrado ainda. Crie uma conta primeiro! (Pressione ENTER para retornar ao mural)")
             return None
         return login_usuario(usuarios)
-    
+
     elif escolha == "2":
         cadastrar(usuarios)
+        salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
         print("\nAgora faça login com sua nova conta:")
         return login_usuario(usuarios)
-    
+
     return None
