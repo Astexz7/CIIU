@@ -52,7 +52,3 @@ def selecionar_curso_usuario():  # mostra os cursos e devolve o que o usuário e
             }
         else:  # número inválido ou texto
             print("Número inválido! Você deve digitar um número entre os disponíveis que seja do seu curso.")
-
-
-if __name__ == "__main__":  # só roda quando você executa "python cursos.py" diretamente (útil para testar)
-    selecionar_curso_usuario()
