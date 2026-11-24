@@ -31,17 +31,24 @@ def fazer_solicitacao(solicitacoes, usuario_logado):  # recebe a lista de solici
     print("Solicitação registrada!")  # avisa que deu certo
 
 
-def ver_solicitacoes(solicitacoes):  # recebe a lista e mostra todas na tela
+def ver_solicitacoes(solicitacoes, ver_autor_real=False):  # ver_autor_real=True só para o administrador
     if not solicitacoes:  # lista vazia conta como False; "not" inverte para True
         print('Nenhuma solicitação ainda.')  # avisa que não tem nada
         return  # sai da função sem fazer mais nada
 
     for s in solicitacoes:  # percorre a lista; "s" é uma solicitação (um dicionário) por vez
-        autor = "Anônimo" if s["anonimo"] else s["autor"]  # se for anônima mostra "Anônimo", senão mostra o email
+        if s["anonimo"] and not ver_autor_real:  # anônima e quem está vendo não é admin...
+            autor = "Anônimo"  # ...esconde o nome
+        elif s["anonimo"]:  # anônima, mas quem está vendo é admin...
+            autor = f"{s['autor']} (anônimo para o público)"  # ...mostra o email com um aviso
+        else:  # não é anônima
+            autor = s["autor"]  # mostra o email normalmente
         print("-" * 50)  # linha separadora com 50 tracinhos
         print(f"#{s['id']} - {s['titulo']}  [{s['status']}]")  # ex: #1 - Ar quebrado  [Pendente]
         print(f"Local: {s['local']} | Autor: {autor} | Data: {s['data']}")  # local, autor e data
         print(f"Descrição: {s['descricao']}")  # descrição do problema
         if s["foto"]:  # só mostra a foto se tiver uma (None conta como False)
             print(f"Foto: {s['foto']}")
+        for h in s.get("historico", []):  # .get devolve [] se a solicitação ainda não tem histórico
+            print(f"  ↳ {h['data']}: {h['de']} → {h['para']}")  # ex: ↳ 25/11/2026 10:00: Pendente → Em andamento
     print("-" * 50)  # linha separadora final
