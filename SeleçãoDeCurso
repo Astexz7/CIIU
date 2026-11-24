@@ -1,6 +1,4 @@
-#armazém de tags
-#CONSERTE OS DEPARTAMENTOS
-#Lembrar de importar isso na parte de cadastro de Nicolas
+#dicionário de tags
 CURSOS_UFRPE = {
     1: {"curso": "BACHARELADO EM ADMINISTRAÇÃO", "tag": "#DEPAD"},
     2: {"curso": "BACHARELADO EM AGRONOMIA", "tag": "#DEPAGRO"},
