@@ -1,15 +1,18 @@
 class Solicitacao:
     natureza = "Geral"
 
-    def __init__(self, autor, local, titulo, descricao):
+    def __init__(self, id_solicitacao, autor, local, titulo, descricao):
+        self.id = id_solicitacao
         self.autor = autor
         self.local = local
         self.titulo = titulo
         self.descricao = descricao
-        self.status = "Andamento"
+        self.status = "Pendente"
         self.votos = {"Alta": 0, "Media": 0, "Baixa": 0}
         self.votantes = []
+        self.historico = []
 
+    @classmethod
     def exemplos(cls):
         return ""
 
@@ -21,10 +24,46 @@ class Solicitacao:
         porcentagem = (self.votos[vencedora] / total) * 100
         return f"{vencedora} ({porcentagem:.0f}%)"
 
+    def para_dict(self):
+        return {
+            "id": self.id,
+            "autor": self.autor,
+            "local": self.local,
+            "natureza": self.natureza,
+            "titulo": self.titulo,
+            "descricao": self.descricao,
+            "status": self.status,
+            "votos": self.votos,
+            "votantes": self.votantes,
+            "historico": self.historico,
+        }
+
+    @classmethod
+    def de_dict(cls, d):
+        mapa_classes = {
+            "Estrutural": SolicitacaoEstrutural,
+            "Eletrônico": SolicitacaoEletronico,
+            "Uso Geral": SolicitacaoUsoGeral,
+        }
+        classe_certa = mapa_classes.get(d.get("natureza"), Solicitacao)
+        obj = classe_certa(
+            d.get("id", 1),
+            d["autor"],
+            d["local"],
+            d["titulo"],
+            d["descricao"],
+        )
+        obj.status = d.get("status", "Pendente")
+        obj.votos = d.get("votos", {"Alta": 0, "Media": 0, "Baixa": 0})
+        obj.votantes = d.get("votantes", [])
+        obj.historico = d.get("historico", [])
+        return obj
+
 
 class SolicitacaoEstrutural(Solicitacao):
     natureza = "Estrutural"
 
+    @classmethod
     def exemplos(cls):
         return "paredes, teto, janelas, piso"
 
@@ -32,6 +71,7 @@ class SolicitacaoEstrutural(Solicitacao):
 class SolicitacaoEletronico(Solicitacao):
     natureza = "Eletrônico"
 
+    @classmethod
     def exemplos(cls):
         return "computador, internet, luz, projetor, ar-condicionado"
 
@@ -39,14 +79,16 @@ class SolicitacaoEletronico(Solicitacao):
 class SolicitacaoUsoGeral(Solicitacao):
     natureza = "Uso Geral"
 
+    @classmethod
     def exemplos(cls):
         return "cadeiras, quadros, mesas, privadas, bebedouros"
+
 
 def fazer_solicitacao(solicitacoes, usuarios, usuario_logado):
     local = input('Local do problema (ex: Biblioteca, DECON, CEAGRI): ').strip()
     if not local:
         print('O local não pode ficar vazio.')
-        return
+        return False
 
     classes_natureza = {
         '1': SolicitacaoEstrutural,
@@ -61,23 +103,25 @@ def fazer_solicitacao(solicitacoes, usuarios, usuario_logado):
     op_nat = input('Escolha uma opção: ').strip()
     if op_nat not in classes_natureza:
         print('Opção inválida.')
-        return
+        return False
 
     titulo = input('Título resumido do problema: ').strip()
     if not titulo:
         print('O título não pode ficar vazio.')
-        return
+        return False
 
     descricao = input('Descreva o problema: ').strip()
     if not descricao:
         print('A descrição não pode ficar vazia.')
-        return
+        return False
 
+    proximo_id = max((s.id for s in solicitacoes), default=0) + 1
     classe_escolhida = classes_natureza[op_nat]
-    solicitacao = classe_escolhida(usuario_logado, local, titulo, descricao)
+    solicitacao = classe_escolhida(proximo_id, usuario_logado, local, titulo, descricao)
 
     solicitacoes.append(solicitacao)
     print('Solicitação registrada!')
+    return True
 
 
 def ver_solicitacoes(solicitacoes):
@@ -86,57 +130,30 @@ def ver_solicitacoes(solicitacoes):
     else:
         for s in solicitacoes:
             print(
-                f"Título: {s.titulo}, Natureza: {s.natureza}, Autor: {s.autor}, "
+                f"#{s.id} | Título: {s.titulo}, Natureza: {s.natureza}, Autor: {s.autor}, "
                 f"Local: {s.local}, Descrição: {s.descricao}, Status: {s.status}, "
                 f"Prioridade: {s.calcular_prioridade()}"
             )
 
 
-def alterar_status(solicitacoes):
-    if not solicitacoes:
-        print('Nenhuma solicitação registrada.')
-        return
-
-    for i, s in enumerate(solicitacoes, start=1):
-        print(f"[{i}] {s.titulo} ({s.local}) - Status: {s.status}")
-
-    escolha = input('\nDigite o número da solicitação para alterar o status: ').strip()
-
-    if escolha.isdigit() and 1 <= int(escolha) <= len(solicitacoes):
-        s = solicitacoes[int(escolha) - 1]
-        print('[1] Andamento | [2] Concluida')
-        novo_status = input('Escolha o novo status: ').strip()
-
-        if novo_status == '1':
-            s.status = 'Andamento'
-            print('Status atualizado para Andamento!')
-        elif novo_status == '2':
-            s.status = 'Concluida'
-            print('Status atualizado para Concluida!')
-        else:
-            print('Opção inválida.')
-    else:
-        print('Número inválido.')
-
-
 def votar_prioridade(solicitacoes, usuario_logado):
-    andamento = [s for s in solicitacoes if s.status == 'Andamento']
+    ativas = [s for s in solicitacoes if s.status != 'Concluída']
 
-    if not andamento:
-        print('Nenhuma solicitação em andamento para votar.')
-        return
+    if not ativas:
+        print('Nenhuma solicitação ativa para votar.')
+        return False
 
-    for i, s in enumerate(andamento, start=1):
-        print(f"[{i}] {s.titulo} ({s.local}) - Prioridade: {s.calcular_prioridade()}")
+    for i, s in enumerate(ativas, start=1):
+        print(f"[{i}] #{s.id} {s.titulo} ({s.local}) - Prioridade: {s.calcular_prioridade()}")
 
     escolha = input('\nEscolha o número da solicitação para votar: ').strip()
 
-    if escolha.isdigit() and 1 <= int(escolha) <= len(andamento):
-        s = andamento[int(escolha) - 1]
+    if escolha.isdigit() and 1 <= int(escolha) <= len(ativas):
+        s = ativas[int(escolha) - 1]
 
         if usuario_logado in s.votantes:
             print('Você já votou na prioridade desta solicitação!')
-            return
+            return False
 
         print('[1] Alta | [2] Média | [3] Baixa')
         voto = input('Qual o nível de prioridade? ').strip()
@@ -147,7 +164,10 @@ def votar_prioridade(solicitacoes, usuario_logado):
             s.votos[nivel] += 1
             s.votantes.append(usuario_logado)
             print(f'Voto "{nivel}" registrado! Prioridade atual: {s.calcular_prioridade()}')
+            return True
         else:
             print('Opção inválida.')
+            return False
     else:
         print('Número inválido.')
+        return False
