@@ -76,10 +76,12 @@ O projeto está sendo desenvolvido em **Python**.
 ```
 CIIU/
 ├── main.py            # ponto de entrada
-├── cadastro.py
-├── cursos.py
+├── cadastro.py        # cadastro e verificação de email
+├── cursos.py          # lista de cursos da UFRPE
 ├── login.py
-├── solicitacoes.py
+├── solicitacoes.py    # registrar e listar solicitações
+├── seguranca.py       # hash e conferência de senhas
+├── dados.py           # salva e carrega dados em dados.json
 └── README.md
 ```
 
