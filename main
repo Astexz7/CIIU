@@ -1,0 +1,6 @@
+from menu import iniciar_menu
+
+usuarios = {}
+solicitacoes = []
+
+iniciar_menu(usuarios, solicitacoes)
