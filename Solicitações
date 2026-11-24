@@ -1,25 +1,96 @@
-def fazer_solicitacao(solicitacoes, usuarios, usuario_logado):  # recebe a lista, os usuários e o email de quem logou
-    local = usuarios[usuario_logado]['curso']['curso']  # entra no usuário, depois no dicionário do curso, e pega o nome do curso
-    print(f'Local da solicitação: {local}')  # mostra o local, que é o curso do aluno
+class Solicitacao:
+    natureza = "Geral"
+
+    def __init__(self, autor, local, titulo, descricao):
+        self.autor = autor
+        self.local = local
+        self.titulo = titulo
+        self.descricao = descricao
+        self.status = "Andamento"
+        self.votos = {"Alta": 0, "Media": 0, "Baixa": 0}
+        self.votantes = []
+
+    def exemplos(cls):
+        return ""
+
+    def calcular_prioridade(self):
+        total = sum(self.votos.values())
+        if total == 0:
+            return "Sem votos"
+        vencedora = max(self.votos, key=self.votos.get)
+        porcentagem = (self.votos[vencedora] / total) * 100
+        return f"{vencedora} ({porcentagem:.0f}%)"
+
+
+class SolicitacaoEstrutural(Solicitacao):
+    natureza = "Estrutural"
+
+    def exemplos(cls):
+        return "paredes, teto, janelas, piso"
+
+
+class SolicitacaoEletronico(Solicitacao):
+    natureza = "Eletrônico"
+
+    def exemplos(cls):
+        return "computador, internet, luz, projetor, ar-condicionado"
+
+
+class SolicitacaoUsoGeral(Solicitacao):
+    natureza = "Uso Geral"
+
+    def exemplos(cls):
+        return "cadeiras, quadros, mesas, privadas, bebedouros"
+
+def fazer_solicitacao(solicitacoes, usuarios, usuario_logado):
+    local = input('Local do problema (ex: Biblioteca, DECON, CEAGRI): ').strip()
+    if not local:
+        print('O local não pode ficar vazio.')
+        return
+
+    classes_natureza = {
+        '1': SolicitacaoEstrutural,
+        '2': SolicitacaoEletronico,
+        '3': SolicitacaoUsoGeral,
+    }
+
+    print('\nQual a natureza do problema?')
+    for chave, classe in classes_natureza.items():
+        print(f"[{chave}] {classe.natureza} (Ex: {classe.exemplos()})")
+
+    op_nat = input('Escolha uma opção: ').strip()
+    if op_nat not in classes_natureza:
+        print('Opção inválida.')
+        return
+
+    titulo = input('Título resumido do problema: ').strip()
+    if not titulo:
+        print('O título não pode ficar vazio.')
+        return
+
     descricao = input('Descreva o problema: ').strip()
     if not descricao:
         print('A descrição não pode ficar vazia.')
-        return  # o usuário digita o problema e a variável guarda o texto
+        return
 
-    solicitacao = {'autor': usuario_logado, 'local': local, 'descricao': descricao, 'status': 'Andamento', 'votos': {'Alta': 0, 'Media': 0, 'Baixa': 0},
-    'votantes': []}  # dicionário pequeno com as 3 informações
-    solicitacoes.append(solicitacao)  # coloca o dicionário no final da lista
-    print('Solicitação registrada!')  # avisa que deu certo
+    classe_escolhida = classes_natureza[op_nat]
+    solicitacao = classe_escolhida(usuario_logado, local, titulo, descricao)
+
+    solicitacoes.append(solicitacao)
+    print('Solicitação registrada!')
 
 
-def ver_solicitacoes(solicitacoes):  # recebe só a lista
-    if len(solicitacoes) == 0:  # len conta os itens; 0 significa lista vazia
-        print('Nenhuma solicitação ainda.')  # trata o caso da lista vazia
+def ver_solicitacoes(solicitacoes):
+    if len(solicitacoes) == 0:
+        print('Nenhuma solicitação ainda.')
     else:
-        for s in solicitacoes:  # percorre a lista, e s é um dicionário por vez
-            print(f"Autor: {s['autor']} | Local: {s['local']} | Descrição: {s['descricao']} | Status: {s.get('status', 'Andamento')} | Prioridade: {calcular_prioridade(s)}")  # busca cada valor pela chaves
+        for s in solicitacoes:
+            print(
+                f"Título: {s.titulo}, Natureza: {s.natureza}, Autor: {s.autor}, "
+                f"Local: {s.local}, Descrição: {s.descricao}, Status: {s.status}, "
+                f"Prioridade: {s.calcular_prioridade()}"
+            )
 
-#Status
 
 def alterar_status(solicitacoes):
     if not solicitacoes:
@@ -27,7 +98,7 @@ def alterar_status(solicitacoes):
         return
 
     for i, s in enumerate(solicitacoes, start=1):
-        print(f"[{i}] {s['descricao']} ({s['local']}) - Status: {s.get('status', 'Andamento')}")
+        print(f"[{i}] {s.titulo} ({s.local}) - Status: {s.status}")
 
     escolha = input('\nDigite o número da solicitação para alterar o status: ').strip()
 
@@ -37,49 +108,33 @@ def alterar_status(solicitacoes):
         novo_status = input('Escolha o novo status: ').strip()
 
         if novo_status == '1':
-            s['status'] = 'Andamento'
+            s.status = 'Andamento'
             print('Status atualizado para Andamento!')
         elif novo_status == '2':
-            s['status'] = 'Concluida'
+            s.status = 'Concluida'
             print('Status atualizado para Concluida!')
         else:
             print('Opção inválida.')
     else:
         print('Número inválido.')
 
-#Enquete de Prioridade(Alta, Média, Baixa, Sem votos)
-
-def calcular_prioridade(solicitacao):
-    votos = solicitacao.get('votos', {'Alta': 0, 'Media': 0, 'Baixa': 0})
-    total = sum(votos.values())
-
-    if total == 0:
-        return "Sem votos"
-
-    vencedora = max(votos, key=votos.get)
-    porcentagem = (votos[vencedora] / total) * 100
-    return f"{vencedora} ({porcentagem:.0f}%)"
-
 
 def votar_prioridade(solicitacoes, usuario_logado):
-    andamento = [s for s in solicitacoes if s.get('status', 'Andamento') == 'Andamento']
+    andamento = [s for s in solicitacoes if s.status == 'Andamento']
 
     if not andamento:
         print('Nenhuma solicitação em andamento para votar.')
         return
 
     for i, s in enumerate(andamento, start=1):
-        print(f"[{i}] {s['descricao']} ({s['local']}) - Prioridade: {calcular_prioridade(s)}")
+        print(f"[{i}] {s.titulo} ({s.local}) - Prioridade: {s.calcular_prioridade()}")
 
     escolha = input('\nEscolha o número da solicitação para votar: ').strip()
 
     if escolha.isdigit() and 1 <= int(escolha) <= len(andamento):
         s = andamento[int(escolha) - 1]
 
-        s.setdefault('votos', {'Alta': 0, 'Media': 0, 'Baixa': 0})
-        s.setdefault('votantes', [])
-
-        if usuario_logado in s['votantes']:
+        if usuario_logado in s.votantes:
             print('Você já votou na prioridade desta solicitação!')
             return
 
@@ -89,9 +144,9 @@ def votar_prioridade(solicitacoes, usuario_logado):
         opcoes = {'1': 'Alta', '2': 'Media', '3': 'Baixa'}
         if voto in opcoes:
             nivel = opcoes[voto]
-            s['votos'][nivel] += 1
-            s['votantes'].append(usuario_logado)
-            print(f'Voto "{nivel}" registrado! Prioridade atual: {calcular_prioridade(s)}')
+            s.votos[nivel] += 1
+            s.votantes.append(usuario_logado)
+            print(f'Voto "{nivel}" registrado! Prioridade atual: {s.calcular_prioridade()}')
         else:
             print('Opção inválida.')
     else:
