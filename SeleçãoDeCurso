@@ -55,5 +55,3 @@ def selecionar_curso_usuario():
             }
         else:
             print("Número inválido! Você deve digitar um número entre os disponíveis que seja do seu curso.")
-if __name__ == "__main__":
-    selecionar_curso_usuario()
