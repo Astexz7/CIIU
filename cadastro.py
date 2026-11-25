@@ -4,6 +4,7 @@ from email.message import EmailMessage  # classe que monta o email (remetente, d
 
 from cursos import selecionar_curso_usuario  # importa a função que mostra a lista de cursos
 from seguranca import gerar_hash, ler_senha  # hash da senha e leitura com asteriscos
+from usuarios import criar_usuario  # cria o objeto do usuário (comum ou administrador)
 
 SENHA_AAAPP = 'jnzs ooga iiof wmbu'  # senha de app do Gmail do projeto
 EMAIL_PROJETO = "projetociiu@gmail.com"  # email que envia os códigos de verificação
@@ -96,5 +97,5 @@ def cadastrar(usuarios):  # função principal do cadastro; recebe o dicionário
     email = pedir_email(usuarios)  # 1º passo: email válido e verificado
     senha = pedir_senha()  # 2º passo: senha válida
     curso = selecionar_curso_usuario()  # 3º passo: escolha do curso
-    usuarios[email] = {'senha': gerar_hash(senha), 'curso': curso}  # salva o usuário (o email é a chave; a senha vai como hash)
+    usuarios[email] = criar_usuario(email, gerar_hash(senha), curso)  # cria o objeto (comum ou admin) e guarda pelo email
     print('Cadastro concluído!')  # avisa que terminou
