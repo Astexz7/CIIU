@@ -81,6 +81,7 @@ O CIIU reúne essas reclamações e sugestões em um só lugar, com **participa�
 - [x] Opção de anonimato (o autor continua salvo, mas aparece como "Anônimo")
 - [x] Status inicial "Pendente"
 - [x] Campos obrigatórios não aceitam texto vazio
+- [x] Votação em enquentes de prioridade
 
 *Persistência*
 - [x] Usuários e solicitações salvos em `dados.json` e carregados ao abrir o programa
