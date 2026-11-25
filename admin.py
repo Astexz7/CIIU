@@ -2,7 +2,7 @@ from datetime import datetime  # usado para registrar a data e a hora de cada mu
 
 ADMINS = {"festo.murilo@ufrpe.br"}  # emails que têm permissão de administrador (para adicionar mais, separe com vírgula)
 
-STATUS_POSSIVEIS = ["Pendente", "Em andamento", "Concluída"]  # os três status que uma solicitação pode ter
+STATUS_POSSIVEIS = ["Pendente", "Em andamento", "Concluída", "Recusada"]  # "Recusada" = fora do escopo do projeto, após a revisão da equipe
 
 
 def eh_admin(email):  # recebe o email de quem está logado
@@ -43,7 +43,7 @@ def alterar_status(solicitacoes, admin_logado):  # recebe a lista e o email do a
         print(f"{i} - {status}")  # ex: 2 - Em andamento
 
     escolha = input("Novo status: ").strip()  # lê a escolha como texto
-    if not escolha.isdigit() or not 1 <= int(escolha) <= len(STATUS_POSSIVEIS):  # precisa ser 1, 2 ou 3
+    if not escolha.isdigit() or not 1 <= int(escolha) <= len(STATUS_POSSIVEIS):  # precisa ser um número da lista (1 a 4)
         print("Opção inválida.")
         return False
 
