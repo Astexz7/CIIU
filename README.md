@@ -49,7 +49,7 @@ O CIIU reúne essas reclamações e sugestões em um só lugar, com **participa�
 | Release | Foco | Entregas |
 |:---:|---|---|
 | **1.0** | Base do sistema | Cadastro de usuários, cursos, login e solicitações |
-| **2.0** | Segurança, persistência e administração | Menu principal, senhas com hash, dados salvos em arquivo, solicitações completas com anonimato, enquentes de prioridade, status de solicitações e painel do administrador |
+| **2.0** | Menu, Segurança, persistência e administração | Menu principal, senhas com hash, dados salvos em arquivo, solicitações completas com anonimato, enquentes de prioridade, ranking de prioridade, status de solicitações e painel do administrador |
 
 <details>
 <summary><b>📋 Ver checklist detalhado</b></summary>
@@ -82,7 +82,8 @@ O CIIU reúne essas reclamações e sugestões em um só lugar, com **participa�
 - [x] Status inicial "Pendente"
 - [x] Campos obrigatórios não aceitam texto vazio
 - [x] Votação em enquentes de prioridade
-
+- [x] Ranking de prioridade
+      
 *Persistência*
 - [x] Usuários e solicitações salvos em `dados.json` e carregados ao abrir o programa
 
