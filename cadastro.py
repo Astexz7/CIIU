@@ -1,10 +1,9 @@
 import secrets  # biblioteca para gerar números aleatórios seguros (melhor que "random" para códigos)
 import smtplib  # biblioteca para enviar emails
 from email.message import EmailMessage  # classe que monta o email (remetente, destinatário, assunto, texto)
-from getpass import getpass  # função igual ao input, mas que esconde o que é digitado (para senhas)
 
 from cursos import selecionar_curso_usuario  # importa a função que mostra a lista de cursos
-from seguranca import gerar_hash  # importa a função que transforma a senha em hash
+from seguranca import gerar_hash, ler_senha  # hash da senha e leitura com asteriscos
 
 SENHA_AAAPP = 'jnzs ooga iiof wmbu'  # senha de app do Gmail do projeto
 EMAIL_PROJETO = "projetociiu@gmail.com"  # email que envia os códigos de verificação
@@ -80,9 +79,9 @@ def pedir_email(usuarios):  # pede o email até conseguir um válido e verificad
 def pedir_senha():  # pede a senha até ela ser válida e confirmada
     """Pede a senha até ela seguir as regras e ser confirmada."""
     while True:  # repete até dar "return"
-        senha = getpass('Crie uma senha (8-20 caracteres, com pelo menos uma letra '  # lê a senha sem mostrar na tela
+        senha = ler_senha('Crie uma senha (8-20 caracteres, com pelo menos uma letra '  # lê a senha mostrando * no lugar de cada caractere
                         'maiúscula, uma minúscula e um número): ')  # (continuação do texto da linha de cima)
-        senha_verificacao = getpass('Digite novamente a senha para confirmação: ')  # pede a senha de novo
+        senha_verificacao = ler_senha('Digite novamente a senha para confirmação: ')  # pede a senha de novo
 
         if senha != senha_verificacao:  # se as duas forem diferentes...
             print('Senhas diferentes.')  # ...avisa e o while repete
