@@ -1,12 +1,12 @@
 import os  # usado para saber se o sistema é Windows (os.name == 'nt')
 import subprocess  # usado para rodar o comando que limpa a tela
 
-from admin import alterar_status, eh_admin  # funções do administrador
 from cadastro import cadastrar  # cadastro de usuário
 from comunidade import comentar, ver_ranking, votar_prioridade  # enquete, comentários e ranking
 from dados import salvar  # grava os dados no dados.json
 from login import login_usuario  # login
 from solicitacoes import Solicitacao, fazer_solicitacao, ver_detalhes, ver_solicitacoes  # classe e funções das solicitações
+from usuarios import Usuario  # classe-mãe dos usuários (comum e administrador)
 
 
 def limpar_tela():  # limpa o terminal: 'cls' no Windows, 'clear' no Linux/macOS
@@ -17,19 +17,17 @@ def pausar():  # espera o Enter antes de limpar a tela de novo
     input("\nPressione ENTER para voltar ao mural...")
 
 
-def salvar_dados(usuarios, solicitacoes_obj, solicitacoes_originais):  # objetos → dicionários → dados.json
-    dicts = [s.para_dict() for s in solicitacoes_obj]  # cada objeto vira um dicionário
-    solicitacoes_originais[:] = dicts  # atualiza a lista original sem trocar a referência
-    salvar(usuarios, dicts)
+def salvar_dados(usuarios, solicitacoes):  # objetos → dicionários → dados.json
+    usuarios_dicts = {email: u.para_dict() for email, u in usuarios.items()}  # cada usuário vira dicionário
+    solicitacoes_dicts = [s.para_dict() for s in solicitacoes]  # cada solicitação vira dicionário
+    salvar(usuarios_dicts, solicitacoes_dicts)
 
 
-def exibir_mural(solicitacoes, usuario_logado, usuarios):  # tela inicial com o feed de solicitações
+def exibir_mural(solicitacoes, usuario_logado):  # tela inicial com o feed de solicitações
     print("=" * 65)
     print("  CIIU - Centro de Informação da Infraestrutura Universitária")
     if usuario_logado:
-        curso_tag = usuarios[usuario_logado]['curso']['tag']  # tag do departamento do curso
-        cargo = " [ADMIN]" if eh_admin(usuario_logado) else ""
-        print(f"  Perfil: {usuario_logado} ({curso_tag}){cargo}")
+        print(f"  Perfil: {usuario_logado.perfil()}")  # cada tipo de usuário mostra o próprio perfil
     else:
         print("  Perfil: [Visitante]")
     print("=" * 65)
@@ -54,7 +52,7 @@ def exibir_mural(solicitacoes, usuario_logado, usuarios):  # tela inicial com o 
     print("-" * 65)
 
 
-def exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts):  # pede login ou cadastro quando precisa
+def exigir_autenticacao(usuarios, solicitacoes):  # pede login ou cadastro quando precisa
     print("\n[!] Você precisa estar logado para realizar esta ação.")
     print("[1] Fazer Login")
     print("[2] Criar Conta (Cadastro)")
@@ -65,25 +63,26 @@ def exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts):  # pede log
         if not usuarios:
             print("\nNenhum usuário cadastrado ainda. Crie uma conta primeiro!")
             return None
-        return login_usuario(usuarios)  # devolve o email, ou None se errar 3 vezes
+        return login_usuario(usuarios)  # devolve o objeto do usuário, ou None se errar 3 vezes
 
     if escolha == "2":
         cadastrar(usuarios)
-        salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)  # salva o usuário novo na hora
+        salvar_dados(usuarios, solicitacoes)  # salva o usuário novo na hora
         print("\nAgora faça login com sua nova conta:")
         return login_usuario(usuarios)
 
     return None  # escolheu voltar
 
 
-def iniciar_menu(usuarios, solicitacoes_dicts):  # laço principal do programa
-    usuario_logado = None  # None = visitante
-    solicitacoes = [Solicitacao.de_dict(d) for d in solicitacoes_dicts]  # dicionários do arquivo → objetos
+def iniciar_menu(usuarios_dicts, solicitacoes_dicts):  # laço principal do programa
+    usuarios = {email: Usuario.de_dict(email, d) for email, d in usuarios_dicts.items()}  # dicionários → objetos
+    solicitacoes = [Solicitacao.de_dict(d) for d in solicitacoes_dicts]  # dicionários → objetos
+    usuario_logado = None  # None = visitante; depois do login, guarda o OBJETO do usuário
 
     while True:
         limpar_tela()
-        exibir_mural(solicitacoes, usuario_logado, usuarios)
-        admin = eh_admin(usuario_logado)  # True só para os emails da lista ADMINS
+        exibir_mural(solicitacoes, usuario_logado)
+        admin = usuario_logado is not None and usuario_logado.eh_admin()  # True só para Administrador
 
         print("AÇÕES DISPONÍVEIS:")
         print("[1] Pesquisar")
@@ -94,8 +93,9 @@ def iniciar_menu(usuarios, solicitacoes_dicts):  # laço principal do programa
         print("[6] Comentar em uma solicitação")
         print("[7] Ranking de prioridade")
         print("[8] Ver detalhes de uma solicitação")
-        if admin:
-            print("[9] Alterar status de solicitação (Admin)")
+        if usuario_logado:
+            for linha in usuario_logado.opcoes_extras():  # polimorfismo: o comum não tem, o admin tem duas
+                print(linha)
         print("[0] Fechar sistema")
         print("-" * 65)
 
@@ -114,27 +114,27 @@ def iniciar_menu(usuarios, solicitacoes_dicts):  # laço principal do programa
             if not tag.startswith("#"):
                 tag = "#" + tag
             filtradas = [s for s in solicitacoes
-                         if usuarios.get(s.autor, {}).get('curso', {}).get('tag') == tag]  # tag do curso de quem relatou
+                         if s.autor in usuarios and usuarios[s.autor].tag() == tag]  # tag do curso de quem relatou
             print(f"\nSolicitações para {tag}:")
             ver_solicitacoes(filtradas, ver_autor_real=admin)
             pausar()
 
         elif opcao in ("3", "4", "6"):  # ações que exigem login
             if not usuario_logado:
-                usuario_logado = exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts)
+                usuario_logado = exigir_autenticacao(usuarios, solicitacoes)
             if usuario_logado:
                 limpar_tela()
                 acoes = {"3": fazer_solicitacao, "4": votar_prioridade, "6": comentar}  # opção → função
-                if acoes[opcao](solicitacoes, usuario_logado):  # True se algo mudou
-                    salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
+                if acoes[opcao](solicitacoes, usuario_logado.email):  # True se algo mudou
+                    salvar_dados(usuarios, solicitacoes)
             pausar()
 
         elif opcao == "5":  # LOGIN / CADASTRO OU SAIR
             if not usuario_logado:
-                usuario_logado = exigir_autenticacao(usuarios, solicitacoes, solicitacoes_dicts)
+                usuario_logado = exigir_autenticacao(usuarios, solicitacoes)
                 pausar()
             else:
-                print(f"Até logo, {usuario_logado}!")
+                print(f"Até logo, {usuario_logado.email}!")
                 usuario_logado = None
                 input("Pressione ENTER para continuar como visitante...")
 
@@ -146,16 +146,18 @@ def iniciar_menu(usuarios, solicitacoes_dicts):  # laço principal do programa
             ver_detalhes(solicitacoes, ver_autor_real=admin)
             pausar()
 
-        elif opcao == "9" and admin:  # ALTERAR STATUS (só admin)
+        elif opcao == "9" and admin:  # ALTERAR STATUS (método do Administrador)
             limpar_tela()
-            dicts_temp = [s.para_dict() for s in solicitacoes]  # o admin.py trabalha com dicionários
-            if alterar_status(dicts_temp, usuario_logado):
-                solicitacoes = [Solicitacao.de_dict(d) for d in dicts_temp]  # volta para objetos
-                salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
+            if usuario_logado.alterar_status(solicitacoes):
+                salvar_dados(usuarios, solicitacoes)
+            pausar()
+
+        elif opcao == "10" and admin:  # VER USUÁRIOS (método do Administrador)
+            usuario_logado.listar_usuarios(usuarios)
             pausar()
 
         elif opcao == "0":  # SAIR
-            salvar_dados(usuarios, solicitacoes, solicitacoes_dicts)
+            salvar_dados(usuarios, solicitacoes)
             print("Encerrando o CIIU...")
             break
 
