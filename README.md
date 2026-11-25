@@ -49,7 +49,7 @@ O CIIU reúne essas reclamações e sugestões em um só lugar, com **participa�
 | Release | Foco | Entregas |
 |:---:|---|---|
 | **1.0** | Base do sistema | Cadastro de usuários, cursos, login e solicitações |
-| **2.0** | Segurança, persistência e administração | Menu principal, senhas com hash, dados salvos em arquivo, solicitações completas com anonimato, enquentes, status e painel do administrador |
+| **2.0** | Segurança, persistência e administração | Menu principal, senhas com hash, dados salvos em arquivo, solicitações completas com anonimato, enquentes de prioridade, status e painel do administrador |
 
 <details>
 <summary><b>📋 Ver checklist detalhado</b></summary>
